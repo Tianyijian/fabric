@@ -47,9 +47,9 @@ def main():
         "--list", "-l", help="List available patterns", action="store_true"
     )
     parser.add_argument(
-        '--temp', help="set the temperature for the model. Default is 0", default=0, type=float)
+        '--temp', help="set the temperature for the model. Default is 0.1", default=0.1, type=float)
     parser.add_argument(
-        '--top_p', help="set the top_p for the model. Default is 1", default=1, type=float)
+        '--top_p', help="set the top_p for the model. Default is 0.9", default=0.9, type=float)
     parser.add_argument(
         '--frequency_penalty', help="set the frequency penalty for the model. Default is 0.1", default=0.1, type=float)
     parser.add_argument(
@@ -73,6 +73,8 @@ def main():
                         help='The URL of the remote ollamaserver to use. ONLY USE THIS if you are using a local ollama server in an non-default location or port')
     parser.add_argument('--context', '-c',
                         help="Use Context file (context.md) to add context to your pattern", action="store_true")
+    parser.add_argument(
+        "--no_rich", "-nr", help="Do not use Python Library Rich for beautiful formatting of markdown in the terminal. Default is False", action="store_true")
 
     args = parser.parse_args()
     home_holder = os.path.expanduser("~")
@@ -180,6 +182,7 @@ def main():
         if args.remoteOllamaServer:
             standalone.streamMessage(text, host=args.remoteOllamaServer)
         else:
+            # print("Debug: run streamMessage")
             standalone.streamMessage(text)
         sys.exit()
     if args.stream and args.context:
@@ -204,6 +207,7 @@ def main():
         if args.remoteOllamaServer:
             standalone.sendMessage(text, host=args.remoteOllamaServer)
         else:
+            # print("Debug: run sendMessage")
             standalone.sendMessage(text)
         sys.exit()
 

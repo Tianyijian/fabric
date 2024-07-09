@@ -11,6 +11,8 @@ import tempfile
 import subprocess
 import shutil
 from youtube_transcript_api import YouTubeTranscriptApi
+from rich.console import Console
+from rich.markdown import Markdown
 
 current_directory = os.path.dirname(os.path.realpath(__file__))
 config_directory = os.path.expanduser("~/.config/fabric")
@@ -52,6 +54,7 @@ class Standalone:
             self.model = os.environ.get('DEFAULT_MODEL', None)
             if not self.model:
                 self.model = 'gpt-4-turbo-preview'
+        # print("Debug: Model Name: {}".format(self.model))
         self.claude = False
         sorted_gpt_models, ollamaList, claudeList, googleList = self.fetch_available_models()
         self.sorted_gpt_models = sorted_gpt_models
@@ -257,6 +260,7 @@ class Standalone:
                     system = " "
                 asyncio.run(self.googleStream(system, user_message['content']))
             else:
+                # print("Debug: OpenAI chat args {} {} {} {} {}\n\n".format(self.model, self.args.temp, self.args.top_p, self.args.frequency_penalty, self.args.presence_penalty))
                 stream = self.client.chat.completions.create(
                     model=self.model,
                     messages=messages,
@@ -277,6 +281,7 @@ class Standalone:
                         elif char == "\n":
                             print()  # Handle newlines
                     sys.stdout.flush()
+                print("\n")
         except Exception as e:
             if "All connection attempts failed" in str(e):
                 print(
@@ -367,6 +372,7 @@ class Standalone:
                     system = " "
                 asyncio.run(self.googleChat(system, user_message['content']))
             else:
+                # print("Debug: OpenAI chat args {} {} {} {} {}\n\n".format(self.model, self.args.temp, self.args.top_p, self.args.frequency_penalty, self.args.presence_penalty))
                 response = self.client.chat.completions.create(
                     model=self.model,
                     messages=messages,
@@ -375,7 +381,10 @@ class Standalone:
                     frequency_penalty=self.args.frequency_penalty,
                     presence_penalty=self.args.presence_penalty,
                 )
-                print(response.choices[0].message.content)
+                if not self.args.no_rich:
+                    use_rich_for_output(response.choices[0].message.content)
+                else:
+                    print(response.choices[0].message.content)                
                 if self.args.copy:
                     pyperclip.copy(response.choices[0].message.content)
                 if self.args.output:
@@ -413,7 +422,10 @@ class Standalone:
             claudeList = []
 
         try:
-            if self.client:
+            if os.environ.get("OPENAI_BASE_URL", None) == "https://open.bigmodel.cn/api/paas/v4/":
+                # print("Debug: Fetch available models from https://open.bigmodel.cn/api/paas/v4/")
+                gptlist = ['glm-4-0520', 'glm-4', 'glm-4-airx', 'glm-4-air', 'glm-4-flash']
+            elif self.client:
                 models = [model.id.strip()
                           for model in self.client.models.list().data]
                 if "/" in models[0] or "\\" in models[0]:
@@ -895,3 +907,11 @@ def run_electron_app():
         subprocess.run(['npm', 'start'], check=True)
     except subprocess.CalledProcessError as e:
         print(f"An error occurred while executing NPM commands: {e}")
+
+
+def use_rich_for_output(text):
+    # print("Use Rich for Output...\n")
+    markdown = Markdown(text)
+    console = Console()
+    console.print(markdown)
+    print("\n")

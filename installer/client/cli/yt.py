@@ -133,10 +133,10 @@ def main():
     parser = argparse.ArgumentParser(
         description='yt (video meta) extracts metadata about a video, such as the transcript, the video\'s duration, and now comments. By Daniel Miessler.')
     parser.add_argument('url', help='YouTube video URL')
-    parser.add_argument('--duration', action='store_true', help='Output only the duration')
-    parser.add_argument('--transcript', action='store_true', help='Output only the transcript')
-    parser.add_argument('--comments', action='store_true', help='Output the comments on the video')
-    parser.add_argument('--metadata', action='store_true', help='Output the video metadata')
+    parser.add_argument('--duration', '-d', action='store_true', help='Output only the duration')
+    parser.add_argument('--transcript', '-t', action='store_true', help='Output only the transcript')
+    parser.add_argument('--comments', '-c', action='store_true', help='Output the comments on the video')
+    parser.add_argument('--metadata', '-m', action='store_true', help='Output the video metadata')
     parser.add_argument('--lang', default='en', help='Language for the transcript (default: English)')
     
     args = parser.parse_args()
