@@ -72,7 +72,7 @@ class Standalone:
             response = await AsyncClient(host=host).chat(model=self.model, messages=messages)
         else:
             response = await AsyncClient().chat(model=self.model, messages=messages)
-        print(response['message']['content'])
+        rich_print(self.args.no_rich, response['message']['content'])
         copy = self.args.copy
         if copy:
             pyperclip.copy(response['message']['content'])
@@ -136,7 +136,7 @@ class Standalone:
             model=self.model,
             temperature=self.args.temp, top_p=self.args.top_p
         )
-        print(message.content[0].text)
+        rich_print(self.args.no_rich, message.content[0].text)
         copy = self.args.copy
         if copy:
             pyperclip.copy(message.content[0].text)
@@ -156,7 +156,7 @@ class Standalone:
         model = genai.GenerativeModel(
             model_name=self.model, system_instruction=system)
         response = model.generate_content(user)
-        print(response.text)
+        rich_print(self.args.no_rich, response.text)
         if copy:
             pyperclip.copy(response.text)
         if self.args.output:
@@ -381,10 +381,7 @@ class Standalone:
                     frequency_penalty=self.args.frequency_penalty,
                     presence_penalty=self.args.presence_penalty,
                 )
-                if not self.args.no_rich:
-                    use_rich_for_output(response.choices[0].message.content)
-                else:
-                    print(response.choices[0].message.content)                
+                rich_print(self.args.no_rich, response.choices[0].message.content)                
                 if self.args.copy:
                     pyperclip.copy(response.choices[0].message.content)
                 if self.args.output:
@@ -909,9 +906,17 @@ def run_electron_app():
         print(f"An error occurred while executing NPM commands: {e}")
 
 
-def use_rich_for_output(text):
-    # print("Use Rich for Output...\n")
-    markdown = Markdown(text)
-    console = Console()
-    console.print(markdown)
-    print("\n")
+def rich_print(no_rich, text):
+    """ 
+    This method prints text using [Rich](https://github.com/Textualize/rich) library if no_rich is False.
+    It is suitable for printing Markdown text when the output is not a stream.
+    Input:
+        no_rich: a boolean indicating whether to use Rich or not
+        text: the text to be printed
+    """
+    if not no_rich:
+        markdown = Markdown(text)
+        console = Console()
+        console.print(markdown)
+    else:
+        print(text)
